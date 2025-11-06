@@ -1,0 +1,65 @@
+{
+  "name": "@arafat75/mqtt-location",
+  "version": "1.2.0",
+  "description": "React hooks and utilities for MQTT-based location tracking with automatic reconnection, offline detection, and TypeScript support",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "echo \"Tests coming soon\" && exit 0"
+  },
+  "keywords": [
+    "mqtt",
+    "location",
+    "tracking",
+    "react",
+    "hooks",
+    "react-hooks",
+    "websocket",
+    "iot",
+    "real-time",
+    "geolocation",
+    "device-tracking",
+    "barikoi",
+    "typescript"
+  ],
+  "author": {
+    "name": "Md. Arafat Hossain",
+    "email": "arafataft7@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "mqtt": "^5.14.1",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "tsup": "^8.5.0",
+    "typescript": "~5.8.3"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
