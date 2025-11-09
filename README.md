@@ -1,22 +1,25 @@
 # @arafat75/mqtt-location
 
-A React hook package for MQTT-based real-time location tracking. This package provides an easy-to-use hook for integrating MQTT location tracking into your React applications with automatic reconnection, offline detection, and full TypeScript support.
+React hook and utility toolkit for MQTT-powered, real-time location tracking. Ship live maps faster with automatic reconnection, offline detection, topic management, and full TypeScript support.
 
 [![npm version](https://img.shields.io/npm/v/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
 [![npm downloads](https://img.shields.io/npm/dm/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
 
-## Features
+## Highlights
 
-- 🎣 **Easy React Hook**: Simple `useMqttLocation` hook for location tracking
-- 🔄 **Auto Reconnection**: Automatic reconnection with configurable retry periods
-- 📡 **Offline Detection**: Automatically detect and mark offline devices
-- 🎯 **Topic Management**: Dynamic topic subscription and switching
-- 💪 **TypeScript**: Full TypeScript support with comprehensive type definitions
-- 🏢 **Multi-tenant Support**: Filter by company, group, or user
-- ⚡ **Optimized**: Efficient marker updates and memory management
-- 📦 **Self-contained**: Bundled with mqtt.js and all necessary polyfills
-- 🌐 **Browser Ready**: Works in browser environments without additional configuration
+- 🎣 Ready-to-use `useMqttLocation` hook with sensible defaults
+- 🔄 Reconnect and keep-alive tuned for browser WebSocket brokers
+- 📡 Offline device detection with periodic marker sweeps
+- 🎯 Topic helpers for company, group, and user level filtering
+- � Works in React 18/19 projects, ships TypeScript definitions out-of-the-box
+- 🌍 Bundles WebSocket-friendly MQTT client and required browser polyfills
+
+## Requirements
+
+- MQTT broker with WebSocket (`ws://` or `wss://`) access
+- React `^18 || ^19`
+- TypeScript projects are supported but optional
 
 ## Installation
 
@@ -28,139 +31,61 @@ yarn add @arafat75/mqtt-location
 pnpm add @arafat75/mqtt-location
 ```
 
-## Usage
-
-### Basic Example
+## Quick Start
 
 ```tsx
-import { useMqttLocation } from '@barikoi/mqtt-location';
+import { useMqttLocation } from '@arafat75/mqtt-location';
 
-function MyMap() {
+const mqttConfig = {
+  host: 'mqtt.example.com',
+  port: 8083,
+  username: 'demo',
+  password: 'secret',
+  protocol: 'ws', // defaults to ws
+};
+
+export function LiveDeviceList() {
   const { markers, isConnected, error } = useMqttLocation({
-    config: {
-      host: 'mqtt.example.com',
-      port: 8083,
-      username: 'your-username',
-      password: 'your-password',
-      protocol: 'ws',
-    },
-    topicConfig: {
-      companyId: 'company-123',
-    },
-    offlineThresholdMs: 10000, // 10 seconds
+    config: mqttConfig,
+    topicConfig: { companyId: 'company-123' },
+    offlineThresholdMs: 10000,
   });
 
-  if (error) return <div>Error: {error.message}</div>;
-  if (!isConnected) return <div>Connecting...</div>;
+  if (error) return <p>Connection error: {error.message}</p>;
+  if (!isConnected) return <p>Connecting to broker…</p>;
 
   return (
-    <div>
-      <h2>Devices: {Object.keys(markers).length}</h2>
+    <ul>
       {Object.values(markers).map((marker) => (
-        <div key={marker.deviceId}>
-          {marker.deviceId}: ({marker.latitude}, {marker.longitude})
-          {marker.isOnline ? ' 🟢' : ' 🔴'}
-        </div>
+        <li key={marker.deviceId}>
+          {marker.deviceId} → {marker.latitude.toFixed(5)}, {marker.longitude.toFixed(5)}
+          {marker.isOnline ? ' (online)' : ' (offline)'}
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 ```
 
-### With Group Filtering
-
-```tsx
-const { markers } = useMqttLocation({
-  config: mqttConfig,
-  topicConfig: {
-    companyId: 'company-123',
-    groupId: 'group-456', // Filter by group
-  },
-});
-```
-
-### With User Filtering
-
-```tsx
-const { markers } = useMqttLocation({
-  config: mqttConfig,
-  topicConfig: {
-    companyId: 'company-123',
-    userId: 'user-789', // Track specific user
-  },
-});
-```
-
-### Custom Topic
-
-```tsx
-const { markers } = useMqttLocation({
-  config: mqttConfig,
-  topic: '+/+/+/+/location', // Custom MQTT topic pattern
-});
-```
-
-### Dynamic Topic Switching
-
-```tsx
-function MyComponent() {
-  const { markers, switchTopic } = useMqttLocation({
-    config: mqttConfig,
-    topicConfig: { companyId: 'company-123' },
-  });
-
-  const handleGroupChange = async (groupId: string) => {
-    const newTopic = buildMqttTopic({
-      companyId: 'company-123',
-      groupId,
-    });
-    await switchTopic(newTopic);
-  };
-
-  return <GroupSelector onChange={handleGroupChange} />;
-}
-```
-
-### With Event Callbacks
-
-```tsx
-const { markers } = useMqttLocation({
-  config: mqttConfig,
-  topicConfig: { companyId: 'company-123' },
-  onConnect: () => console.log('Connected!'),
-  onDisconnect: () => console.log('Disconnected!'),
-  onError: (error) => console.error('Error:', error),
-  onMessage: (topic, message) => {
-    console.log('Message received:', topic, message);
-  },
-});
-```
-
-## API Reference
+## Hook Reference
 
 ### `useMqttLocation(options)`
 
-Main hook for MQTT location tracking.
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `config` | `MqttConnectionConfig` | required | MQTT connection parameters (host, port, credentials, protocol).
+| `topic` | `string` | `''` | Raw MQTT topic. Ignored when `topicConfig` is supplied.
+| `topicConfig` | `TopicConfig` | `undefined` | Builder inputs for company/group/user topic patterns.
+| `offlineThresholdMs` | `number` | `10000` | Mark device offline if no update received within this window.
+| `autoConnect` | `boolean` | `true` | Automatically connect on mount.
+| `onConnect` | `() => void` | `undefined` | Invoked after successful broker connection.
+| `onDisconnect` | `() => void` | `undefined` | Invoked when the client disconnects or ends.
+| `onError` | `(error: Error) => void` | `undefined` | Forward connection or subscription errors.
+| `onMessage` | `(topic: string, message: MqttLocationMessage) => void` | `undefined` | Access raw payload alongside normalized markers.
 
-#### Options
+The hook returns:
 
-```typescript
-interface UseMqttLocationOptions {
-  config: MqttConnectionConfig;
-  topic?: string;
-  topicConfig?: TopicConfig;
-  offlineThresholdMs?: number;
-  autoConnect?: boolean;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: Error) => void;
-  onMessage?: (topic: string, message: MqttLocationMessage) => void;
-}
-```
-
-#### Returns
-
-```typescript
+```ts
 interface UseMqttLocationReturn {
   markers: Record<string, MqttMarker>;
   client: MqttClient | null;
@@ -176,40 +101,91 @@ interface UseMqttLocationReturn {
 }
 ```
 
-### Utility Functions
+### Common Patterns
 
-#### `buildMqttTopic(config: TopicConfig): string`
+- **Filter by group**
 
-Build MQTT topic from configuration.
+  ```tsx
+  useMqttLocation({
+    config: mqttConfig,
+    topicConfig: { companyId: 'company-123', groupId: 'group-456' },
+  });
+  ```
 
-```typescript
-const topic = buildMqttTopic({
-  companyId: 'company-123',
-  groupId: 'group-456',
-  userId: 'user-789',
-});
-// Returns: "company/company-123/group-456/user-789/location"
-```
+- **Track a specific user**
 
-#### `parseLocationMessage(message: Buffer | string, topic: string): MqttMarker | null`
+  ```tsx
+  useMqttLocation({
+    config: mqttConfig,
+    topicConfig: { companyId: 'company-123', userId: 'user-789' },
+  });
+  ```
 
-Parse MQTT message into marker object.
+- **Custom topic string**
 
-#### `checkOfflineDevices(markers: Record<string, MqttMarker>, thresholdMs: number): Record<string, MqttMarker>`
+  ```tsx
+  useMqttLocation({
+    config: mqttConfig,
+    topic: 'company/company-123/+/+/location',
+  });
+  ```
 
-Check and update offline status of devices.
+- **Switch topics at runtime**
 
-#### Topic Parsers
+  ```tsx
+  const { switchTopic } = useMqttLocation({ config: mqttConfig, topicConfig: { companyId: 'company-123' } });
 
-- `parseTopicGroupId(topic: string): string | null`
-- `parseTopicCompanyId(topic: string): string | null`
-- `parseTopicUserId(topic: string): string | null`
+  async function handleGroupChange(groupId: string) {
+    const newTopic = buildMqttTopic({ companyId: 'company-123', groupId });
+    await switchTopic(newTopic);
+  }
+  ```
 
-## Types
+- **Tap into connection lifecycle**
 
-### `MqttMarker`
+  ```tsx
+  useMqttLocation({
+    config: mqttConfig,
+    topicConfig: { companyId: 'company-123' },
+    onConnect: () => console.info('MQTT connected'),
+    onDisconnect: () => console.info('MQTT disconnected'),
+    onError: (error) => console.error('MQTT error', error),
+    onMessage: (topic, message) => console.debug('Raw payload', topic, message),
+  });
+  ```
 
-```typescript
+## Utility Helpers
+
+All utilities are exported from the package root.
+
+- `buildMqttTopic(config: TopicConfig): string` – Assemble topics for company/group/user filters.
+- `switchMqttSubscription(client, oldTopic, newTopic)` – Gracefully unsubscribe/subscribe when changing filters.
+- `parseTopicGroupId(topic)`, `parseTopicCompanyId(topic)`, `parseTopicUserId(topic)` – Extract metadata from topic strings.
+- `parseLocationMessage(message, topic, options?)` – Normalize MQTT payloads into `MqttMarker` objects. Supports custom field names via `MessageParserOptions`.
+- `buildMqttUri(host, port, protocol?)` – Generate broker URLs for `ws`, `wss`, `mqtt`, or `mqtts`.
+- `checkOfflineDevices(markers, thresholdMs)` – Mark stale devices offline based on timestamps.
+
+## Data Types
+
+```ts
+interface TopicConfig {
+  companyId: string;
+  groupId?: string | null;
+  userId?: string | null;
+}
+
+interface MqttConnectionConfig {
+  host: string;
+  port: number | string;
+  username: string;
+  password: string;
+  protocol?: 'ws' | 'wss' | 'mqtt' | 'mqtts';
+  clientIdPrefix?: string;
+  reconnectPeriod?: number;
+  connectTimeout?: number;
+  clean?: boolean;
+}
+
 interface MqttMarker {
   deviceId: string;
   latitude: number;
@@ -221,139 +197,63 @@ interface MqttMarker {
   isOnline: boolean;
   groupId?: string;
   companyId?: string;
+  [key: string]: unknown;
+}
+
+interface MessageParserOptions {
+  deviceIdField?: string;
+  userIdField?: string;
+  latitudeField?: string;
+  longitudeField?: string;
+  speedField?: string;
 }
 ```
 
-### `MqttLocationMessage`
-
-```typescript
-interface MqttLocationMessage {
-  device_id?: string;
-  user_id?: string;
-  latitude: number | string;
-  longitude: number | string;
-  speed?: number | string;
-  altitude?: number | string;
-  accuracy?: number | string;
-  timestamp?: number | string;
-}
-```
-
-## Topic Structure
-
-The package uses the following topic structure:
+## Topic Cheatsheet
 
 ```
 company/{companyId}/{groupId}/{userId}/location
 ```
 
-- **All company users**: `company/{companyId}/+/+/location`
-- **Group users**: `company/{companyId}/{groupId}/+/location`
-- **Specific user**: `company/{companyId}/+/{userId}/location`
-
-## Configuration
-
-### Environment Variables
-
-```env
-MQTT_HOST=mqtt.example.com
-MQTT_PORT=8083
-MQTT_USERNAME=username
-MQTT_PASSWORD=password
-```
-
-### Default Values
-
-- **Offline Threshold**: 10 seconds
-- **Reconnect Period**: 1 second
-- **Connect Timeout**: 4 seconds
-- **QoS Level**: 0
-- **Protocol**: WebSocket (ws)
-
-## Browser Support
-
-This package works in all modern browsers that support WebSockets:
-- Chrome/Edge 88+
-- Firefox 78+
-- Safari 14+
-- Opera 74+
+- Track every device in a company: `company/{companyId}/+/+/location`
+- Track a group: `company/{companyId}/{groupId}/+/location`
+- Track a single user: `company/{companyId}/+/{userId}/location`
 
 ## Troubleshooting
 
-### Connection Issues
-
-If you're having trouble connecting to the MQTT broker:
-
-1. **Check WebSocket URL**: Ensure the broker URL uses `ws://` or `wss://` protocol
-2. **Verify Credentials**: Confirm username and password are correct
-3. **Check Network**: Ensure the broker is accessible from your network
-4. **Firewall**: Verify port (usually 8083 for WebSocket) is not blocked
-
-### TypeScript Errors
-
-If you encounter TypeScript errors, ensure you're using TypeScript 4.0 or higher:
-
-```bash
-npm install -D typescript@latest
-```
+- **Handshake fails** – Confirm your broker exposes a WebSocket listener and that `protocol` matches (`ws` vs `wss`).
+- **No markers appear** – Verify the topic matches the publisher, including company/group/user path segments.
+- **Devices stuck online** – Adjust `offlineThresholdMs` to match your publisher’s heartbeat cadence.
+- **TypeScript complaining about `Buffer`** – Make sure your project includes Node type stubs or upgrade to TypeScript `>=4.0` (recommended: project defaults to `~5.8`).
 
 ## Development
 
-### Building from Source
-
 ```bash
-# Clone the repository
 git clone https://github.com/arafataft/mqtt-location.git
-cd mqtt-location
-
-# Install dependencies
+cd mqtt-location/packages/mqtt-location
 npm install
-
-# Build the package
+npm run dev # builds with watch
 npm run build
-
-# Watch mode for development
-npm run dev
 ```
 
-### Publishing
+Publish workflow:
 
 ```bash
-# Update version in package.json
-npm version patch|minor|major
-
-# Build and publish
+npm version patch # or minor/major
 npm run build
 npm publish --access public
 ```
 
-## Contributing
+## Resources
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## Links
-
-- 📦 [npm Package](https://www.npmjs.com/package/@arafat75/mqtt-location)
-- 🐙 [GitHub Repository](https://github.com/arafataft/mqtt-location)
-- 📝 [Changelog](https://github.com/arafataft/mqtt-location/releases)
-- 🐛 [Report Issues](https://github.com/arafataft/mqtt-location/issues)
-
-## Author
-
-**Md. Arafat Hossain**
-- Email: arafataft7@gmail.com
-- GitHub: [@arafataft](https://github.com/arafataft)
+- npm package: https://www.npmjs.com/package/@arafat75/mqtt-location
+- Issue tracker: https://github.com/arafataft/mqtt-location/issues
+- Releases & changelog: https://github.com/arafataft/mqtt-location/releases
 
 ## License
 
-MIT
+Released under the MIT License. See `LICENSE` for details.
 
-## Author
+## Maintainer
 
-Barikoi
+Md. Arafat Hossain · arafataft7@gmail.com · https://github.com/arafataft
