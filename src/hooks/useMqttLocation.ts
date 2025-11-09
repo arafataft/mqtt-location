@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { MqttClient, IClientOptions } from 'mqtt';
-
 // Dynamic import to handle mqtt's complex CJS/ESM exports
-// @ts-ignore
 import * as mqttModule from 'mqtt';
 import type { 
   UseMqttLocationOptions, 
@@ -78,7 +76,6 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
    */
   const connect = useCallback(() => {
     if (clientRef.current?.connected) {
-      console.log('MQTT client already connected');
       return;
     }
 
@@ -103,18 +100,9 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
         rejectUnauthorized: false,
       };
 
-      console.log('Connecting to MQTT broker:', uri);
-      console.log('MQTT Options:', { ...mqttOptions, password: '***' });
-      
       // Handle different mqtt module export patterns
-      // @ts-ignore
+      // @ts-expect-error - mqtt module has complex CJS/ESM exports
       const mqtt = mqttModule.default?.default || mqttModule.default || mqttModule;
-      console.log('MQTT module keys:', Object.keys(mqtt));
-      console.log('MQTT connect type:', typeof mqtt.connect);
-      
-      if (typeof mqtt.connect !== 'function') {
-        throw new Error('mqtt.connect is not a function. Available keys: ' + Object.keys(mqtt).join(', '));
-      }
       
       const client = mqtt.connect(uri, mqttOptions);
       clientRef.current = client;
@@ -131,9 +119,8 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
       }, (config.connectTimeout || DEFAULT_CONNECT_TIMEOUT) * 2);
 
       // Connection successful
-      client.on('connect', (connack: unknown) => {
+      client.on('connect', () => {
         clearTimeout(connectionTimeout);
-        console.log('MQTT Connected successfully', connack);
         setIsConnected(true);
         setIsConnecting(false);
         setError(null);
@@ -146,7 +133,6 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
               console.error('Subscription error:', err);
               setError(new Error(`Subscription failed: ${err.message}`));
             } else {
-              console.log(`Subscribed to: ${topicToSubscribe}`);
               setCurrentTopic(topicToSubscribe);
             }
           });
@@ -187,26 +173,22 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
 
       // Connection closed
       client.on('close', () => {
-        console.log('MQTT Connection closed');
         setIsConnected(false);
         onDisconnect?.();
       });
 
       // Reconnecting
       client.on('reconnect', () => {
-        console.log('MQTT Reconnecting...');
         setIsConnecting(true);
       });
 
       // Client offline
       client.on('offline', () => {
-        console.log('MQTT Client is offline');
         setIsConnected(false);
       });
 
       // Connection ended
       client.on('end', () => {
-        console.log('MQTT Connection ended');
         setIsConnected(false);
       });
 
@@ -224,7 +206,6 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
   const disconnect = useCallback(() => {
     if (clientRef.current) {
       clientRef.current.end(true, () => {
-        console.log('MQTT Connection terminated');
         clientRef.current = null;
         setIsConnected(false);
         setIsConnecting(false);
@@ -246,7 +227,6 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
           console.error('Subscribe error:', err);
           reject(err);
         } else {
-          console.log(`Subscribed to: ${topic}`);
           setCurrentTopic(topic);
           resolve();
         }
@@ -268,7 +248,6 @@ export const useMqttLocation = (options: UseMqttLocationOptions): UseMqttLocatio
           console.error('Unsubscribe error:', err);
           reject(err);
         } else {
-          console.log(`Unsubscribed from: ${topic}`);
           if (currentTopic === topic) {
             setCurrentTopic('');
           }

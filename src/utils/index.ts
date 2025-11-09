@@ -51,8 +51,6 @@ export const switchMqttSubscription = async (
       client.unsubscribe(oldTopic, (err) => {
         if (err) {
           console.error('Unsubscribe error:', err);
-        } else {
-          console.log(`Unsubscribed from: ${oldTopic}`);
         }
         unsubscribed = true;
         checkComplete();
@@ -67,7 +65,6 @@ export const switchMqttSubscription = async (
         console.error('Subscribe error:', err);
         reject(err);
       } else {
-        console.log(`Subscribed to: ${newTopic}`);
         subscribed = true;
         checkComplete();
       }

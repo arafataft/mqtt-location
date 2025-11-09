@@ -1,25 +1,32 @@
-# @barikoi/mqtt-location
+# @arafat75/mqtt-location
 
-MQTT location tracking package for Barikoi projects. This package provides React hooks and utilities for easily integrating MQTT-based real-time location tracking into your applications.
+A React hook package for MQTT-based real-time location tracking. This package provides an easy-to-use hook for integrating MQTT location tracking into your React applications with automatic reconnection, offline detection, and full TypeScript support.
+
+[![npm version](https://img.shields.io/npm/v/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
+[![npm downloads](https://img.shields.io/npm/dm/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
-- 🎣 **React Hook**: Easy-to-use `useMqttLocation` hook
-- 🔄 **Auto Reconnection**: Automatic reconnection with configurable retry
+- 🎣 **Easy React Hook**: Simple `useMqttLocation` hook for location tracking
+- 🔄 **Auto Reconnection**: Automatic reconnection with configurable retry periods
 - 📡 **Offline Detection**: Automatically detect and mark offline devices
 - 🎯 **Topic Management**: Dynamic topic subscription and switching
-- 💪 **TypeScript**: Full TypeScript support with type definitions
-- 🏢 **Multi-tenant**: Support for company/group/user filtering
+- 💪 **TypeScript**: Full TypeScript support with comprehensive type definitions
+- 🏢 **Multi-tenant Support**: Filter by company, group, or user
 - ⚡ **Optimized**: Efficient marker updates and memory management
+- 📦 **Self-contained**: Bundled with mqtt.js and all necessary polyfills
+- 🌐 **Browser Ready**: Works in browser environments without additional configuration
 
 ## Installation
 
 ```bash
-# In your workspace root
-npm install
+npm install @arafat75/mqtt-location
+# or
+yarn add @arafat75/mqtt-location
+# or
+pnpm add @arafat75/mqtt-location
 ```
-
-This package is part of the Barikoi workspace and is automatically linked.
 
 ## Usage
 
@@ -263,16 +270,85 @@ MQTT_PASSWORD=password
 - **QoS Level**: 0
 - **Protocol**: WebSocket (ws)
 
-## Development
+## Browser Support
+
+This package works in all modern browsers that support WebSockets:
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- Opera 74+
+
+## Troubleshooting
+
+### Connection Issues
+
+If you're having trouble connecting to the MQTT broker:
+
+1. **Check WebSocket URL**: Ensure the broker URL uses `ws://` or `wss://` protocol
+2. **Verify Credentials**: Confirm username and password are correct
+3. **Check Network**: Ensure the broker is accessible from your network
+4. **Firewall**: Verify port (usually 8083 for WebSocket) is not blocked
+
+### TypeScript Errors
+
+If you encounter TypeScript errors, ensure you're using TypeScript 4.0 or higher:
 
 ```bash
+npm install -D typescript@latest
+```
+
+## Development
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/arafataft/mqtt-location.git
+cd mqtt-location
+
+# Install dependencies
+npm install
+
 # Build the package
-cd packages/mqtt-location
 npm run build
 
-# Watch mode
+# Watch mode for development
 npm run dev
 ```
+
+### Publishing
+
+```bash
+# Update version in package.json
+npm version patch|minor|major
+
+# Build and publish
+npm run build
+npm publish --access public
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Links
+
+- 📦 [npm Package](https://www.npmjs.com/package/@arafat75/mqtt-location)
+- 🐙 [GitHub Repository](https://github.com/arafataft/mqtt-location)
+- 📝 [Changelog](https://github.com/arafataft/mqtt-location/releases)
+- 🐛 [Report Issues](https://github.com/arafataft/mqtt-location/issues)
+
+## Author
+
+**Md. Arafat Hossain**
+- Email: arafataft7@gmail.com
+- GitHub: [@arafataft](https://github.com/arafataft)
 
 ## License
 
