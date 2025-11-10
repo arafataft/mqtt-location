@@ -125,52 +125,90 @@ export default DeviceTracker;
 
 ## Bundle Options
 
-We offer **two versions** of this package:
+Choose the right version for your project:
 
-### Full Bundle (Default) - Recommended
+| Feature | **Full Bundle** ✨ (Default) | **Lite Bundle** ⚡ (Optimized) |
+|---------|----------------------------|-------------------------------|
+| **Import Path** | `@arafat75/mqtt-location` | `@arafat75/mqtt-location/lite` |
+| **Bundle Size** | ~450 KB | ~5 KB (99% smaller!) |
+| **Extra Dependencies** | ❌ None required | ✅ Must install `mqtt` |
+| **Bundler Config** | ❌ Not needed | ✅ Required (webpack/vite/next) |
+| **Setup Time** | 🚀 Instant | 🔧 ~5 minutes |
+| **Best For** | Prototypes, Small Apps | Production, Performance-critical |
 
-**What:** Everything included in one package  
-**Size:** ~450 KB  
-**When to use:** Just starting out, quick prototypes, or don't care about bundle size
+---
+
+### 📦 Full Bundle (Default) - Zero Configuration
+
+**Perfect for: Quick start, learning, or small applications**
 
 ```tsx
 import { useMqttLocation } from '@arafat75/mqtt-location';
 ```
 
-- No extra setup required  
-- Works immediately after `npm install`  
-- Perfect for learning and prototyping
+**✅ Advantages:**
+- ✨ **Works immediately** after `npm install`
+- 🎯 **No extra configuration** needed
+- 🏃 **Fastest to get started** - write code in seconds
+- 📚 **Great for learning** MQTT location tracking
+
+**❌ Trade-offs:**
+- 📦 Larger bundle size (~450 KB)
+- Not ideal for bundle-size-sensitive production apps
+
+**Installation:**
+```bash
+npm install @arafat75/mqtt-location
+```
+
+That's it! Start coding immediately.
 
 ---
 
-### Lite Bundle - For Production Optimization
+### ⚡ Lite Bundle - Production Optimized
 
-**What:** Smaller version that requires separate MQTT installation  
-**Size:** ~5 KB (99% smaller!)  
-**When to use:** Production apps where bundle size matters
+**Perfect for: Production apps, performance-critical applications, or when bundle size matters**
 
-#### How to Use Lite Bundle:
+```tsx
+import { useMqttLocation } from '@arafat75/mqtt-location/lite';
+```
 
-**Step 1:** Install additional dependencies
+**✅ Advantages:**
+- 🚀 **99% smaller** bundle size (~5 KB vs ~450 KB)
+- ⚡ **Faster page loads** for end users
+- 🎯 **Better for production** and large-scale apps
+- 💰 **Lower bandwidth costs**
+
+**❌ Trade-offs:**
+- 🔧 Requires extra setup (install `mqtt` + bundler config)
+- ⏱️ Takes ~5 minutes to configure
+
+#### 🔧 Lite Bundle Setup (3 Steps):
+
+##### Step 1: Install Dependencies
 
 ```bash
 npm install @arafat75/mqtt-location mqtt
 ```
 
-**Step 2:** Change your import (add `/lite`)
+##### Step 2: Update Import Path
 
 ```tsx
-// Before (Full Bundle)
+// ❌ OLD (Full Bundle)
 import { useMqttLocation } from '@arafat75/mqtt-location';
 
-// After (Lite Bundle)
+// ✅ NEW (Lite Bundle) - Just add "/lite"
 import { useMqttLocation } from '@arafat75/mqtt-location/lite';
 ```
 
-**Step 3:** Configure your bundler (choose one):
+##### Step 3: Configure Your Bundler
+
+**⚠️ Important:** Lite bundle requires bundler configuration. Choose your setup:
 
 <details>
-<summary><strong>Vite Configuration</strong></summary>
+<summary><strong>✅ Vite Projects (Create React App, Vite)</strong></summary>
+
+**Why needed:** Vite doesn't include Node.js polyfills by default. MQTT needs `buffer`, `stream`, etc.
 
 ```bash
 npm install vite-plugin-node-polyfills --save-dev
@@ -193,8 +231,16 @@ export default defineConfig({
 </details>
 
 <details>
-<summary><strong>Webpack 5 Configuration</strong></summary>
+<summary><strong>✅ Webpack 5 Projects (Manual Webpack Setup)</strong></summary>
 
+**Why needed:** Webpack 5 removed automatic Node.js polyfills. We need to tell webpack which polyfills to use.
+
+**First, install polyfill packages:**
+```bash
+npm install buffer stream-browserify events process --save-dev
+```
+
+**Then configure webpack:**
 ```js
 // webpack.config.js
 const webpack = require('webpack');
@@ -202,36 +248,47 @@ const webpack = require('webpack');
 module.exports = {
   resolve: {
     fallback: {
-      buffer: require.resolve('buffer/'),
-      stream: require.resolve('stream-browserify'),
-      events: require.resolve('events/'),
-      process: require.resolve('process/browser'),
+      buffer: require.resolve('buffer/'),           // ← Maps 'buffer' to browser version
+      stream: require.resolve('stream-browserify'), // ← Maps 'stream' to browser version
+      events: require.resolve('events/'),           // ← Maps 'events' to browser version
+      process: require.resolve('process/browser'),  // ← Maps 'process' to browser version
     },
   },
   plugins: [
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],  // ← Makes Buffer globally available
+      process: 'process/browser',    // ← Makes process globally available
     }),
   ],
 };
 ```
 
+**What `require.resolve()` does:** Tells webpack the exact path to the browser-compatible polyfill packages.
+
 </details>
 
 <details>
-<summary><strong>Next.js Configuration</strong></summary>
+<summary><strong>✅ Next.js Projects (Webpack-based)</strong></summary>
+
+**Why needed:** Next.js uses webpack internally, which doesn't include Node.js polyfills by default.
+
+```bash
+npm install buffer stream-browserify events process --save-dev
+```
 
 ```js
 // next.config.js
 module.exports = {
-  webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      buffer: require.resolve('buffer/'),
-      stream: require.resolve('stream-browserify'),
-      events: require.resolve('events/'),
-    };
+  webpack: (config, { isServer }) => {
+    if (!isServer) {  // ← Only for browser builds
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        buffer: require.resolve('buffer/'),
+        stream: require.resolve('stream-browserify'),
+        events: require.resolve('events/'),
+        process: require.resolve('process/browser'),
+      };
+    }
     return config;
   },
 };
@@ -239,7 +296,32 @@ module.exports = {
 
 </details>
 
-**Important:** The API is identical for both bundles. Only the import path and setup differ!
+---
+
+### 🎯 Quick Decision Guide
+
+**Choose Full Bundle if:**
+- 🚀 You want to start coding NOW
+- 📚 You're learning or prototyping
+- 🎨 Bundle size is not a concern
+- 🔰 You don't want to deal with configuration
+
+**Choose Lite Bundle if:**
+- ⚡ Production app with performance requirements
+- 📊 Bundle size matters (mobile users, slow networks)
+- 🏢 Large-scale application
+- 💰 You want to minimize bandwidth costs
+
+> **💡 Pro Tip:** Start with Full Bundle during development, switch to Lite for production!
+
+---
+
+### ⚠️ Important Notes
+
+1. **API is 100% identical** - Both bundles use the same code, just different imports
+2. **No feature differences** - Full and Lite have the exact same features
+3. **Can't mix imports** - Use either Full OR Lite, not both in the same project
+4. **Configuration only needed for Lite** - Full bundle works without any config
 
 ---
 
