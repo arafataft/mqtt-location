@@ -6,8 +6,8 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   dts: true,
   clean: true,
-  sourcemap: false, // Exclude source maps from published package
-  minify: true, // Minify for smaller bundle size
+  sourcemap: false, 
+  minify: true,
   external: ['react'],
   treeshake: true,
   noExternal: ['mqtt', 'stream-browserify', 'buffer', 'events', 'process'],

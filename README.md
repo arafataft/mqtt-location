@@ -1,70 +1,75 @@
-# @arafat75/mqtt-location
+# MQTT Location Tracker for Barikoi Trace
 
-A simple React hook for tracking real-time device locations using MQTT. Perfect for building live tracking dashboards, fleet management apps, or any application that needs to display moving markers on a map.
+A production-ready React hook for real-time device location tracking using MQTT with Barikoi Trace. Build live tracking dashboards, fleet management apps, and location monitoring systems with zero configuration.
 
 [![npm version](https://img.shields.io/npm/v/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
 [![npm downloads](https://img.shields.io/npm/dm/@arafat75/mqtt-location)](https://www.npmjs.com/package/@arafat75/mqtt-location)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/mit)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)](https://www.typescriptlang.org/)
 
 ---
 
-## Table of Contents
+## Key Features
 
-- [Why Use This?](#why-use-this)
-- [Quick Start](#quick-start)
-- [Installation](#installation)
-- [Basic Usage](#basic-usage)
-- [Complete Examples](#complete-examples)
-- [API Reference](#api-reference)
-- [TypeScript Support](#typescript-support)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+### MQTT + React Integration
+
+- **Real-time Location Streaming** - WebSocket-based MQTT for instant updates
+- **Auto-Reconnection** - Resilient connection with exponential backoff
+- **Smart Topic Filtering** - Company, group, or device-level subscriptions
+- **State Management** - React hooks with automatic marker updates
+- **Offline Detection** - Know when devices stop transmitting
+- **Zero Configuration** - Works out-of-the-box with any MQTT broker
+
+### Technical Capabilities
+
+- **MQTT Protocol Support** - WebSocket (ws://, wss://) and native MQTT
+- **Topic Wildcards** - Full support for `+` wildcards in subscriptions
+- **Message Parsing** - Automatic normalization of location payloads
+- **TypeScript First** - Complete type definitions included
+- **React 18 & 19** - Full support for modern React features
+- **Modular Architecture** - Clean separation: Hooks → Utils → Types
 
 ---
 
-## Why Use This?
+## Prerequisites
 
-Building a live location tracking app can be complex. This package handles:
+- **Node.js** >= 16.0.0
+- **React** >= 18.0.0 or 19.0.0
+- **Barikoi Trace** backend integration
+- **MQTT Broker** with WebSocket support (ws:// or wss://)
+- Broker credentials (host, port, username, password)
 
-- **MQTT Connection** - Connects to your broker with auto-reconnect
-- **Location Updates** - Automatically updates when devices send new positions
-- **Offline Detection** - Know when devices stop sending data
-- **Topic Management** - Filter by company, group, or specific users
-- **TypeScript** - Full type safety included
-
-**You just focus on displaying the data—we handle everything else.**
+> **How it works:** Barikoi Trace backend publishes location data to your MQTT broker, and this React hook subscribes to receive live updates and display device locations in real-time.
 
 ---
 
 ## Quick Start
 
-### What You Need
-
-1. A React project (React 18 or 19)
-2. An MQTT broker with WebSocket support (`ws://` or `wss://`)
-3. Broker credentials (host, port, username, password)
-
-> **New to MQTT?** Think of it like a messaging system where devices send their location, and your app listens for updates in real-time.
-
----
-
-## Installation
-
-### Step 1: Install the Package
+### 1. Install the package
 
 ```bash
 npm install @arafat75/mqtt-location
+# or
+yarn add @arafat75/mqtt-location
+# or
+pnpm add @arafat75/mqtt-location
 ```
 
-### Step 2: You're Ready!
+### 2. Import and use
 
-That's it! The default bundle includes everything you need.
+```tsx
+import { useMqttLocation } from '@arafat75/mqtt-location';
+```
+
+### 3. You're ready to track!
+
+That's it! No additional configuration or polyfills needed. The package includes everything for browser compatibility.
 
 ---
 
 ## Basic Usage
 
-Here's a complete example that displays a list of devices with their locations:
+Here's a complete example that displays real-time device locations:
 
 ```tsx
 import React from 'react';
@@ -122,6 +127,38 @@ export default DeviceTracker;
 
 ---
 
+## Architecture
+
+### How It Works
+
+1. **MQTT Connection** - Hook establishes WebSocket connection to your broker
+2. **Topic Subscription** - Subscribes to location topics with wildcard support
+3. **Message Processing** - Incoming MQTT messages parsed and normalized
+4. **State Updates** - React state automatically updated with new locations
+5. **Offline Detection** - Background task marks inactive devices as offline
+
+### Technical Stack
+
+- **React 18+** - Modern hooks-based API
+- **TypeScript 5.8** - Full type safety
+- **MQTT.js 5.14** - Industry-standard MQTT client
+- **tsup** - Fast TypeScript bundler with tree-shaking
+- **ESM + CJS** - Works in any JavaScript environment
+
+### Data Flow
+
+```
+Mobile App/Device → Barikoi Trace Backend → MQTT Broker → WebSocket → useMqttLocation Hook
+                                                                              ↓
+                                                                      Message Parser
+                                                                              ↓
+                                                                      React State (markers)
+                                                                              ↓
+                                                                      Your UI Components
+```
+
+---
+
 ## Complete Examples
 
 ### Example 1: Filter by Group
@@ -152,18 +189,7 @@ const { markers } = useMqttLocation({
 });
 ```
 
-### Example 3: Custom Topic Pattern
-
-Use your own MQTT topic structure:
-
-```tsx
-const { markers } = useMqttLocation({
-  config: mqttConfig,
-  topic: 'company/+/+/+/location',  // Custom topic pattern
-});
-```
-
-### Example 4: Handle Connection Events
+### Example 3: Handle Connection Events
 
 Get notified about connection status:
 
@@ -186,7 +212,7 @@ const { markers, isConnected } = useMqttLocation({
 });
 ```
 
-### Example 5: Switch Topics Dynamically
+### Example 4: Switch Topics Dynamically
 
 Change what you're tracking without reconnecting:
 
@@ -222,7 +248,7 @@ function DynamicTracker() {
 }
 ```
 
-### Example 6: Integration with Barikoi Maps
+### Example 5: Integration with Barikoi Maps
 
 Use with Barikoi's map library for real-time location tracking:
 
@@ -282,6 +308,38 @@ function LiveMap() {
 
 ---
 
+## Project Structure
+
+```
+src/
+├── index.ts                    # Main exports
+├── hooks/
+│   └── useMqttLocation.ts      # Core React hook with MQTT integration
+├── utils/
+│   └── index.ts                # Utility functions
+│       ├── buildMqttTopic()    # Topic string builder
+│       ├── buildMqttUri()      # Broker URI constructor
+│       ├── parseLocationMessage() # Message parser & normalizer
+│       ├── checkOfflineDevices() # Offline detection
+│       ├── switchMqttSubscription() # Dynamic topic switching
+│       └── Topic parsers       # Extract IDs from topics
+└── types/
+    └── index.ts                # TypeScript definitions
+        ├── MqttMarker          # Normalized location data
+        ├── MqttConnectionConfig # Connection settings
+        ├── TopicConfig         # Topic builder config
+        └── UseMqttLocationOptions # Hook configuration
+```
+
+### Module Breakdown
+
+- **Hooks Layer** - React integration with state management
+- **MQTT Client Layer** - Connection management and message handling  
+- **Utils Layer** - Pure functions for data transformation
+- **Types Layer** - TypeScript definitions for type safety
+
+---
+
 ## API Reference
 
 ### `useMqttLocation(options)`
@@ -293,8 +351,7 @@ The main hook for tracking locations.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `config` | `MqttConnectionConfig` | Yes | - | MQTT broker connection details |
-| `topicConfig` | `TopicConfig` | No | - | Topic builder for company/group/user filtering |
-| `topic` | `string` | No | `''` | Custom MQTT topic (overrides topicConfig) |
+| `topicConfig` | `TopicConfig` | Yes* | - | Topic configuration for company/group/user filtering |
 | `offlineThresholdMs` | `number` | No | `10000` | Milliseconds before marking device offline |
 | `autoConnect` | `boolean` | No | `true` | Connect automatically on mount |
 | `onConnect` | `function` | No | - | Callback when connected |
@@ -465,7 +522,6 @@ const topicConfig: TopicConfig = {
 const { markers } = useMqttLocation({ config, topicConfig });
 ```
 
----
 
 ## Troubleshooting
 
@@ -571,23 +627,23 @@ If you're still stuck:
 
 ---
 
-## MQTT Topic Structure
+## Barikoi Trace Topic Structure
 
-This package expects location messages on topics following this pattern:
+This package is configured for Barikoi Trace's MQTT topic format:
 
 ```
 company/{companyId}/{groupId}/{userId}/location
 ```
 
-### Topic Patterns
+### Topic Filtering Options
 
 - **All company devices:** `company/123/+/+/location`
 - **Specific group:** `company/123/fleet-a/+/location`
 - **Specific user:** `company/123/+/driver-001/location`
 
-### Message Format
+### Location Message Format
 
-Your devices should publish JSON messages like:
+Barikoi Trace publishes location data in this JSON format:
 
 ```json
 {
@@ -616,19 +672,7 @@ Your devices should publish JSON messages like:
 
 ## Performance Tips
 
-### 1. Use Lite Bundle in Production
-
-The lite bundle is 99% smaller:
-
-```bash
-npm install @arafat75/mqtt-location mqtt
-```
-
-```tsx
-import { useMqttLocation } from '@arafat75/mqtt-location/lite';
-```
-
-### 2. Filter Topics Wisely
+### 1. Filter Topics Wisely
 
 Don't subscribe to more than you need:
 
@@ -640,7 +684,7 @@ topicConfig: { companyId: 'company-123' }
 topicConfig: { companyId: 'company-123', groupId: 'fleet-a' }
 ```
 
-### 3. Adjust Offline Threshold
+### 2. Adjust Offline Threshold
 
 Match your device update frequency:
 
@@ -649,7 +693,7 @@ Match your device update frequency:
 offlineThresholdMs: 60000
 ```
 
-### 4. Optimize Rendering
+### 3. Optimize Rendering
 
 Use `React.memo` for marker components:
 
@@ -663,53 +707,112 @@ const DeviceMarker = React.memo(({ marker }) => (
 
 ## Contributing
 
-We welcome contributions! Here's how:
+Contributions are welcome! Whether it's bug fixes, feature requests, or documentation improvements, we appreciate your help.
 
 ### Development Setup
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/arafataft/mqtt-location.git
 cd mqtt-location/packages/mqtt-location
 
 # Install dependencies
 npm install
 
-# Start development build
+# Start development mode (watch mode)
 npm run dev
 
 # Build for production
 npm run build
-```
 
-### Running Tests
-
-```bash
+# Run tests
 npm test
+
+# Lint code
+npm run lint
 ```
 
-### Submit Changes
+### How to Contribute
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork the repository** on GitHub
+2. **Create a feature branch** (`git checkout -b feature/awesome-feature`)
+3. **Make your changes** with clear, descriptive commits
+4. **Write or update tests** if applicable
+5. **Update documentation** if you're changing functionality
+6. **Push to your fork** (`git push origin feature/awesome-feature`)
+7. **Open a Pull Request** with a clear title and description
+
+### Contribution Guidelines
+
+- Follow existing code style and conventions
+- Write meaningful commit messages
+- Add tests for new features
+- Update README.md for API changes
+- Be respectful and constructive in discussions
+
+By contributing to this project, you agree that your contributions will be licensed under the MIT License alongside the original project. Contributors retain copyright to their contributions and are added to the list of contributors.
 
 ---
 
-## Resources
+## Resources & Documentation
 
-- **npm Package:** https://www.npmjs.com/package/@arafat75/mqtt-location
-- **GitHub Repository:** https://github.com/arafataft/mqtt-location
-- **Report Issues:** https://github.com/arafataft/mqtt-location/issues
-- **Changelog:** https://github.com/arafataft/mqtt-location/releases
+### Package & Repository
+
+- [npm Package](https://www.npmjs.com/package/@arafat75/mqtt-location) - Install and version history
+- [GitHub Repository](https://github.com/arafataft/mqtt-location) - Source code and examples
+- [Report Issues](https://github.com/arafataft/mqtt-location/issues) - Bug reports and feature requests
+- [Changelog](https://github.com/arafataft/mqtt-location/releases) - Release notes and updates
+
+### MQTT Resources
+
+- [MQTT Protocol](https://mqtt.org/) - Official MQTT specification
+- [MQTT.js Documentation](https://github.com/mqttjs/MQTT.js) - JavaScript MQTT client library
+- [HiveMQ](https://www.hivemq.com/) - Popular MQTT broker with free tier
+- [Eclipse Mosquitto](https://mosquitto.org/) - Open-source MQTT broker
+
+### React & TypeScript
+
+- [React Documentation](https://react.dev/) - Official React docs
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/) - TypeScript documentation
+- [React Hooks Guide](https://react.dev/reference/react) - React hooks reference
 
 ---
 
 ## License
 
-MIT © [Md. Arafat Hossain](https://github.com/arafataft)
+This project is licensed under the MIT License - see below for details:
+
+```
+MIT License
+
+Copyright (c) 2024 Md. Arafat Hossan and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Attribution
+
+When using this project, please provide attribution by:
+
+1. Including the copyright notice in your project
+2. Linking back to this repository
+3. Mentioning the use of the MQTT.js library for MQTT connectivity
 
 ---
 
@@ -717,6 +820,19 @@ MIT © [Md. Arafat Hossain](https://github.com/arafataft)
 
 Found this helpful? Give it a star on [GitHub](https://github.com/arafataft/mqtt-location)!
 
-**Need help?** Open an issue or reach out:
-- Email: arafataft7@gmail.com
-- GitHub: [@arafataft](https://github.com/arafataft)
+### Get Help
+
+- **Email:** arafataft7@gmail.com
+- **GitHub:** [@arafataft](https://github.com/arafataft)
+- **Issues:** [Report a bug](https://github.com/arafataft/mqtt-location/issues)
+- **Discussions:** [Ask questions](https://github.com/arafataft/mqtt-location/discussions)
+
+### Stay Updated
+
+- **Watch** the repository for updates
+- **Star** to show your support
+- **Follow** [@arafataft](https://github.com/arafataft) for more projects
+
+---
+
+**Built with care for the real-time tracking and React community**
